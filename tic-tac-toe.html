@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tic Tac Toe</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            font-family: Arial, sans-serif;
+            background: linear-gradient(to right, #ff7e5f, #feb47b);
+            margin: 0;
+        }
+
+        .tic-tac-toe {
+            display: grid;
+            grid-template-columns: repeat(3, 100px);
+            grid-template-rows: repeat(3, 100px);
+            gap: 10px;
+            position: relative;
+        }
+
+        .cell {
+            width: 100px;
+            height: 100px;
+            background-color: #ffffff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 36px;
+            cursor: pointer;
+            border: 2px solid #333;
+            border-radius: 10px;
+            transition: background-color 0.3s, transform 0.3s;
+        }
+
+        .cell:hover {
+            background-color: #f1f1f1;
+            transform: scale(1.1);
+        }
+
+        .winner {
+            margin-top: 20px;
+            font-size: 24px;
+            color: #fff;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 10px 20px;
+            border-radius: 10px;
+        }
+
+        .line {
+            position: absolute;
+            background-color: red;
+            height: 5px;
+            transform-origin: left;
+            z-index: 1;
+        }
+    </style>
+</head>
+<body>
+    <h1>Tic - Tac - Toe</h1>
+    <div class="tic-tac-toe">
+        <div class="cell" data-index="0"></div>
+        <div class="cell" data-index="1"></div>
+        <div class="cell" data-index="2"></div>
+        <div class="cell" data-index="3"></div>
+        <div class="cell" data-index="4"></div>
+        <div class="cell" data-index="5"></div>
+        <div class="cell" data-index="6"></div>
+        <div class="cell" data-index="7"></div>
+        <div class="cell" data-index="8"></div>
+    </div>
+    <div class="winner"></div>
+
+    <script>
+        const cells = document.querySelectorAll('.cell');
+        const winnerDisplay = document.querySelector('.winner');
+        let currentPlayer = 'X';
+        let board = ['', '', '', '', '', '', '', '', ''];
+
+        const winningCombinations = [
+            [0, 1, 2],
+            [3, 4, 5],
+            [6, 7, 8],
+            [0, 3, 6],
+            [1, 4, 7],
+            [2, 5, 8],
+            [0, 4, 8],
+            [2, 4, 6]
+        ];
+
+        cells.forEach(cell => {
+            cell.addEventListener('click', handleCellClick);
+        });
+
+        function handleCellClick(e) {
+            const index = e.target.dataset.index;
+
+            if (board[index] !== '') return;
+
+            board[index] = currentPlayer;
+            e.target.textContent = currentPlayer;
+
+            if (checkWin(currentPlayer)) {
+                winnerDisplay.textContent = `${currentPlayer} wins!`;
+                drawLine(currentPlayer);
+                resetBoard();
+                return;
+            }
+
+            if (board.every(cell => cell !== '')) {
+                winnerDisplay.textContent = 'Draw!';
+                resetBoard();
+                return;
+            }
+
+            currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
+        }
+
+        function checkWin(player) {
+            return winningCombinations.some(combination => {
+                return combination.every(index => {
+                    return board[index] === player;
+                });
+            });
+        }
+
+        function drawLine(player) {
+            const winningCombination = winningCombinations.find(combination => {
+                return combination.every(index => {
+                    return board[index] === player;
+                });
+            });
+
+            if (winningCombination) {
+                const [start, , end] = winningCombination;
+                const startX = cells[start].offsetLeft + cells[start].offsetWidth / 2;
+                const startY = cells[start].offsetTop + cells[start].offsetHeight / 2;
+                const endX = cells[end].offsetLeft + cells[end].offsetWidth / 2;
+                const endY = cells[end].offsetTop + cells[end].offsetHeight / 2;
+                const length = Math.sqrt(Math.pow(endX - startX, 2) + Math.pow(endY - startY, 2));
+                const angle = Math.atan2(endY - startY, endX - startX) * (180 / Math.PI);
+
+                const line = document.createElement('div');
+                line.classList.add('line');
+                line.style.width = `${length}px`;
+                line.style.left = `${startX}px`;
+                line.style.top = `${startY}px`;
+                line.style.transform = `rotate(${angle}deg)`;
+
+                document.querySelector('.tic-tac-toe').appendChild(line);
+            }
+        }
+
+        function resetBoard() {
+            setTimeout(() => {
+                board = ['', '', '', '', '', '', '', '', ''];
+                cells.forEach(cell => {
+                    cell.textContent = '';
+                });
+                currentPlayer = 'X';
+                winnerDisplay.textContent = '';
+                const line = document.querySelector('.line');
+                if (line) line.remove();
+            }, 2000);
+        }
+    </script>
+</body>
+</html>
